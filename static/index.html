@@ -1,0 +1,167 @@
+<html>
+	<head>
+		<title>Multilingual Tileserver</title>
+		
+		<style type="text/css"> 
+			body {
+				padding: 0;
+				margin: 0;
+			}
+			
+			#map {
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+
+		<link rel="stylesheet" href="leaflet/leaflet.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="leaflet/leaflet.ie.css" /><![endif]-->
+		<script src="leaflet/leaflet.js"></script>
+
+		<script type="text/javascript">
+			// initialize the map on the "map" div
+			var map = new L.Map('map');
+
+			// create a CloudMade tile layer (or use other provider of your choice)
+			var cloudmade = new L.TileLayer('http://{s}.tile.cloudmade.com/YOUR-API-KEY/997/256/{z}/{x}/{y}.png', {
+			    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+			    maxZoom: 18
+			});
+
+			// add the CloudMade layer to the map set the view to a given center and zoom
+			map.addLayer(cloudmade).setView(new L.LatLng(51.505, -0.09), 13);
+		</script>
+
+		<!--script type="text/javascript">
+			// map object
+			var map;
+			
+			// initiator
+			function initmap(layers)
+			{
+				// show an error image for missing tiles
+				OpenLayers.Util.onImageLoadError = function()
+				{
+					this.src = 'error.png';
+				};
+				
+				// get the request-parameters
+				var args = OpenLayers.Util.getParameters();
+				
+				// main map object
+				map = new OpenLayers.Map ("map", {
+					controls: [
+						new OpenLayers.Control.Navigation(),
+						new OpenLayers.Control.PanZoomBar(),
+						new OpenLayers.Control.Attribution(),
+						new OpenLayers.Control.LayerSwitcher(),
+						new OpenLayers.Control.Permalink()
+					],
+					
+					// mercator bounds
+					maxExtent: new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34),
+					maxResolution: 156543.0399,
+					
+					units: 'm',
+					projection: new OpenLayers.Projection("EPSG:900913"),
+					displayProjection: new OpenLayers.Projection("EPSG:4326"),
+					
+					layers: layers
+				});
+				
+				// default zoom & position
+				var zoom = 2;
+				var lat = 50.92, lon = 10.65;
+				
+				// lat/lon requestes
+				if(args.lon && args.lat)
+				{
+					// zoom requested
+					if(args.zoom)
+					{
+						zoom = parseInt(args.zoom);
+						var maxZoom = map.getNumZoomLevels();
+						if (zoom >= maxZoom) zoom = maxZoom - 1;
+					}
+					
+					// transform center
+					var center = new OpenLayers.LonLat(parseFloat(args.lon), parseFloat(args.lat)).
+						transform(map.displayProjection, map.getProjectionObject())
+					
+					// move to
+					map.setCenter(center, zoom);
+				}
+				
+				// bbox requestet
+				else if (args.bbox)
+				{
+					// transform bbox
+					var bounds = OpenLayers.Bounds.fromArray(args.bbox).
+						transform(map.displayProjection, map.getProjectionObject());
+					
+					// move to
+					map.zoomToExtent(bounds)
+				}
+				
+				// default center
+				else
+				{
+					// set the default center
+					var center = new OpenLayers.LonLat(lon, lat).
+						transform(map.displayProjection, map.getProjectionObject());
+					
+					// move to
+					map.setCenter(center, zoom);
+				}
+			}
+			
+			// create the custom layer
+			OpenLayers.Layer.OSM.Local = OpenLayers.Class(OpenLayers.Layer.OSM, {
+				
+				initialize: function(name, options) {
+					var url = [
+						"tiles/" + name + "/${z}/${x}/${y}.png",
+					];
+					
+					options = OpenLayers.Util.extend({
+						numZoomLevels: 19,
+						buffer: 1,
+						title: name
+					}, options);
+					
+					OpenLayers.Layer.OSM.prototype.initialize.apply(this, [options.title, url, options]);
+				},
+				
+				CLASS_NAME: "OpenLayers.Layer.OSM.Local"
+			});
+			
+			function init()
+			{
+				OpenLayers.Request.GET(
+				{
+					url: 'maps',
+					callback: function(r)
+					{
+						var json = new OpenLayers.Format.JSON();
+						var maps = json.read(r.responseText);
+						var layers = [];
+						
+						for(map in maps)
+						{
+							layers.push(
+								new OpenLayers.Layer.OSM.Local(map, {numZoomLevels: maps[map].maxz - maps[map].minz + 1})
+							);
+						};
+						
+						console.log(maps);
+						initmap(layers);
+					}
+				});
+			}
+		</script-->
+	</head>
+	
+	<body onload="init();">
+		<div id="map"></div>
+	</body>
+</html>

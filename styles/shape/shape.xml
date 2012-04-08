@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map [
+	<!ENTITY srs900913 "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs +over">
+	<!ENTITY srs4326 "+init=epsg:4326">
+	<!ENTITY srsmercator "+proj=merc +datum=WGS84 +over">
+	
+	<!ENTITY fonts SYSTEM "fonts.inc">
+	
+	<!ENTITY % scale SYSTEM "scale.ent">
+	%scale;
+]>
+
+<Map background-color="#b5d0d0" srs="&srs900913;" minimum-version="2.0.0">
+	&fonts;
+	<Style name="necountries">
+		<Rule>
+			&maxscale_zoom1;
+			&minscale_zoom3;
+			<LineSymbolizer stroke="grey" stroke-width="0.5"/>
+		</Rule>
+	</Style>
+	<Style name="nepopulated">
+		<Rule>
+			&maxscale_zoom3;
+			&minscale_zoom4;
+			<Filter>[SCALERANK]=1</Filter>
+			<TextSymbolizer size="8" dy="2" fill="grey" fontset-name="book-fonts" halo-radius="1">[NAMEASCII]</TextSymbolizer>
+		</Rule>
+	</Style>
+	<Style name="world">
+		<Rule>
+			&maxscale_zoom0;
+			&minscale_zoom9;
+			<PolygonSymbolizer fill="#f2efe9"/>
+		</Rule>
+	</Style>
+	<Style name="coast-poly">
+		<Rule>
+			&maxscale_zoom10;
+			<PolygonSymbolizer fill="#f2efe9"/>
+		</Rule>
+	</Style>
+	<Style name="builtup">
+		<Rule>
+			&maxscale_zoom8;
+			&minscale_zoom10;
+			<PolygonSymbolizer fill="#ddd"/>
+		</Rule>
+	</Style>
+	
+	<Layer name="world" status="on" srs="&srs900913;">
+		<StyleName>world</StyleName>
+		<Datasource>
+			<Parameter name="type">shape</Parameter>
+			<Parameter name="file">world_boundaries/shoreline_300</Parameter>
+		</Datasource>
+	</Layer>
+	<Layer name="coast-poly" status="on" srs="&srs900913;">
+		<StyleName>coast-poly</StyleName>
+		<Datasource>
+			<Parameter name="type">shape</Parameter>
+			<Parameter name="file">world_boundaries/processed_p</Parameter>
+		</Datasource>
+	</Layer>
+	<Layer name="builtup" status="on" srs="&srsmercator;">
+		<StyleName>builtup</StyleName>
+		<Datasource>
+			<Parameter name="type">shape</Parameter>
+			<Parameter name="file">world_boundaries/builtup_area</Parameter>
+		</Datasource>
+	</Layer>
+	<Layer name="necountries" status="on" srs="&srs4326;">
+		<StyleName>necountries</StyleName>
+		<Datasource>
+			<Parameter name="type">shape</Parameter>
+			<Parameter name="file">world_boundaries/110m_admin_0_boundary_lines_land.shp</Parameter>
+		</Datasource>
+	</Layer>
+	<Layer name="nepopulated" status="on" srs="&srs4326;">
+		<StyleName>nepopulated</StyleName>
+		<Datasource>
+			<Parameter name="type">shape</Parameter>
+			<Parameter name="file">world_boundaries/ne_10m_populated_places.shp</Parameter>
+			<Parameter name="encoding">latin1</Parameter>
+		</Datasource>
+	</Layer>
+</Map>
