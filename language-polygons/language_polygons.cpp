@@ -11,7 +11,6 @@
 #include <geos/operation/buffer/BufferBuilder.h>
 #include <geos/operation/buffer/BufferParameters.h>
 #include <geos/operation/union/CascadedPolygonUnion.h>
-#include <geos/io/WKTWriter.h>
 
 
 class LanguagePolygonsHandler : public Osmium::Handler::Base {
@@ -59,11 +58,6 @@ public:
 	void final() {
 		m_progress_handler.final();
 		
-		Osmium::Export::PolygonShapefile shp("language_polygons");
-		shp.add_field("language", FTString, max_language_len, 0);
-		shp.add_field("nodes", FTInteger, 10, 0);
-		
-		int ishape = 0;
 		for(language_map::iterator it = lmap.begin(); it != lmap.end(); it++) {
 			std::cout << "building language polygon for \"" << it->first << "\" (" << it->second->size() << " nodes)" << std::endl;
 
@@ -73,7 +67,7 @@ public:
 			for(coord_vector::iterator vit = it->second->begin(); vit != it->second->end(); vit++) {
 				geos::operation::buffer::BufferBuilder buffer_builder(buffer_builder_params);
 				geos::geom::Point* p = factory.createPoint((*vit));
-				geos::geom::Geometry* buf = buffer_builder.buffer(p, 0.1);
+				geos::geom::Geometry* buf = buffer_builder.buffer(p, 0.4);
 
 				buffers.push_back(static_cast<geos::geom::Polygon*>(buf));
 
@@ -84,61 +78,44 @@ public:
 
 			geos::geom::Geometry *buffer_union = geos::operation::geounion::CascadedPolygonUnion::Union(&buffers);
 
-			std::string bufwkt = wkt.write(buffer_union);
-			std::cout << bufwkt << std::endl;
-
 			for(poly_vector::iterator bit = buffers.begin(); bit != buffers.end(); bit++) {
 				delete (*bit);
 			}
 			
-			std::vector<double> lons, lats;
-			std::vector<int> starts;
-			size_t idx = 0;
-			size_t nrings = buffer_union->getNumGeometries(), ncoords = buffer_union->getNumPoints();
+			Osmium::Export::PolygonShapefile shp("o/"+it->first);
+			shp.add_field("dummy", FTInteger, 1, 0);
 			
-			lons.resize(ncoords);
-			lats.resize(ncoords);
-			
-			std::cout << "writing language polygon with " << nrings << " rings consisting of " << ncoords << " points" << std::endl;
-			
-			for(size_t iring = 0; iring < nrings; iring++) {
+			for(size_t iring = 0, nrings = buffer_union->getNumGeometries(); iring < nrings; iring++) {
 				const geos::geom::Geometry *ring = buffer_union->getGeometryN(iring);
 				const geos::geom::CoordinateSequence* coords = ring->getCoordinates();
 				
-				starts.push_back(idx);
+				size_t ncoords = coords->size();
+				std::vector<double> lons, lats;
 				
-				for(size_t icoord = 0, ncoords = coords->size(); icoord < ncoords; icoord++) {
+				lons.resize(ncoords);
+				lats.resize(ncoords);
+				
+				for(size_t icoord = 0; icoord < ncoords; icoord++) {
 					const geos::geom::Coordinate coord = coords->getAt(icoord);
 					
-					lats[idx] = coord.x;
-					lons[idx] = coord.y;
-					idx++;
+					lats[icoord] = coord.x;
+					lons[icoord] = coord.y;
 				}
+				
+				shp.add_geometry(SHPCreateSimpleObject(
+					SHPT_POLYGON,
+					ncoords,
+					&(lats[0]),
+					&(lons[0]),
+					NULL
+				));
+				shp.add_attribute(0, 0); // dummy
 			}
 			
-			SHPObject *shpobj = SHPCreateObject(
-				SHPT_POLYGON,
-				ishape++,
-				0, //starts.size(),
-				NULL, //&(starts[0]),
-				NULL,
-				lats.size(),
-				&(lats[0]),
-				&(lons[0]),
-				NULL,
-				NULL
-			);
-			
-			shp.add_geometry(shpobj);
-			//shp.add_attribute(0, it->first);
-			//shp.add_attribute(1, it->second->size());
+			shp.close();
 			
 			delete buffer_union;
-			
-			ishape++;
 		}
-		
-		shp.close();
 	}
 };
 
