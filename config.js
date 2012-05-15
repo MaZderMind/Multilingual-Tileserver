@@ -104,7 +104,7 @@ exports.config = {
 		// the osm-style gets a higher priority (3) then all other stylesn (1),
 		// also the concurrency is decreased to 2
 		'osm': {
-			priority: 3
+			priority: 3,
 			concurency: 2,
 			
 			// change the priority on a per-zoom base
