@@ -3,12 +3,12 @@ exports.config = {
 	// port to listen on using http
 	port: 5000,
 	
-	// timeout in milisecods (seconds × 1000) for render-requests, before the browser get's a 404
+	// timeout in milisecods (seconds = 1000) for render-requests, before the browser get's a 404
 	timeout: 3000,
 	
 	// what should happen when a render-request timeouts
 	//  null = Send a 404
-	//  path to a file = send this file
+	//  path to a file = send this file (together with a 404 code)
 	fallback: null,
 	
 	// ServerName-String used in HTTP-Responses
@@ -89,19 +89,25 @@ exports.config = {
 	/*
 	 * How fast a Tile will be renderend is controlled by two parameters: concurrency and priority
 	 *
-	 * The concurrency specifies, how much tiles in a stype can be rendered at the same time.
+	 * The concurrency specifies, how much tiles of a style can be rendered at the same time.
 	 * This depends mostly on the complexity of the style: the harder it hits the database, the
 	 * lower the concurrency should be. For example on my notebook it's no good idea to render
 	 * more then two tiles in the osm style at once. The shape and plz layer are much simpler to
 	 * render, my notebook can render up to 4 of these at the same time.
+	 * Q: Does a concurrency per Style make sense or shouldn't it be a concurrency per renderer, 
+	 *like tirex does it
 	 *
-	 * ...
+	 * The priority decides which tile gets rendered first. Tiles with higher priority are
+	 * rendered first.
+	 *
+	 * Both values default to 1
 	 */
 	queue: {
+		// change the default settings
 		//priority: 1,
 		concurency: 4,
 		
-		// the osm-style gets a higher priority (3) then all other stylesn (1),
+		// the osm-style gets a higher priority (3) then all other styles (1),
 		// also the concurrency is decreased to 2
 		'osm': {
 			priority: 3,
@@ -109,7 +115,7 @@ exports.config = {
 			
 			// change the priority on a per-zoom base
 			perzoom: [
-				// increase the zoomlevel further to 5 for the inner city zoom levels (z14+)
+				// increase the priority further to 5 for the inner city zoom levels (z14+)
 				{
 					minz: 14,
 					//maxz: 19,
