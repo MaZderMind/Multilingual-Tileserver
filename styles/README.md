@@ -2,5 +2,6 @@
 Run inside this folder:
 
     svn export http://svn.openstreetmap.org/applications/rendering/mapnik/ osm
-	osm/get-coastlines.sh
-	osm/generate_xml.py
+	cd osm
+	./get-coastlines.sh
+	./generate_xml.py
