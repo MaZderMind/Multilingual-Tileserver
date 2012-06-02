@@ -1,6 +1,6 @@
 /*
  * Multilingual Tileserver
- * Licensed by Peter Körner under the BSD License
+ * Licensed by Peter KÃ¶rner under the BSD License
  */
 
 var http = require('http');
